@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Managed Cluster resource."
+      }
+    }
+  },
+  "variables": {
+    "dnsPrefix": "[concat(parameters('resourceName'), uniquestring(resourceGroup().id))]",
+    "osDiskSizeGB": 0,
+    "kubernetesVersion": "1.17.11",
+    "networkPlugin": "kubenet",
+    "maxPods": 30,
+    "enableRBAC": true,
+    "vmssNodePool": true,
+    "windowsProfile": false,
+    "enablePrivateCluster": false,
+    "enableHttpApplicationRouting": false,
+    "enableAzurePolicy": false
+  },
+  "resources": [
+    {
+      "apiVersion": "2020-03-01",
+      "dependsOn": [],
+      "type": "Microsoft.ContainerService/managedClusters",
+      "location": "[resourceGroup().location]",
+      "name": "[parameters('resourceName')]",
+      "properties": {
+        "kubernetesVersion": "[variables('kubernetesVersion')]",
+        "enableRBAC": "[variables('enableRBAC')]",
+        "dnsPrefix": "[variables('dnsPrefix')]",
+        "agentPoolProfiles": [
+          {
+            "name": "agentpool",
+            "osDiskSizeGB": "[variables('osDiskSizeGB')]",
+            "count": 1,
+            "vmSize": "Standard_DS2_v2",
+            "osType": "Linux",
+            "storageProfile": "ManagedDisks",
+            "type": "VirtualMachineScaleSets",
+            "mode": "System"
+          }
+        ],
+        "networkProfile": {
+          "loadBalancerSku": "standard",
+          "networkPlugin": "[variables('networkPlugin')]"
+        },
+        "apiServerAccessProfile": {
+          "enablePrivateCluster": "[variables('enablePrivateCluster')]"
+        },
+        "addonProfiles": {
+          "httpApplicationRouting": {
+            "enabled": "[variables('enableHttpApplicationRouting')]"
+          },
+          "azurePolicy": {
+            "enabled": "[variables('enableAzurePolicy')]"
+          }
+        }
+      },
+      "tags": {},
+      "identity": {
+        "type": "SystemAssigned"
+      }
+    }
+  ],
+  "outputs": {
+    "controlPlaneFQDN": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('resourceName'))).fqdn]"
+    }
+  }
+}
