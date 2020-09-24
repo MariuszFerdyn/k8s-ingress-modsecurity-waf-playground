@@ -8,3 +8,4 @@ Two scripts that creates Azure Kubernetes Cluster in Resource Group very fast wi
 - az resource list --resource-group name_of_resourcegroup -o table
 - az aks get-credentials --resource-group name_of_resourcegroup --name k8s_cluster_name
 - kubectl get nodes
+
