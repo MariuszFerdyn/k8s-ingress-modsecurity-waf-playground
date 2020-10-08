@@ -8,6 +8,12 @@ Two scripts that creates Azure Kubernetes Cluster in Resource Group very fast wi
 - az resource list --resource-group name_of_resourcegroup -o table
 - az aks get-credentials --resource-group name_of_resourcegroup --name k8s_cluster_name
 - kubectl get nodes
+- copy phpinfo.yaml to local disk
+- kubectl create -f phpinfo.yaml
+- kubectl get pods
+- kubectl get service
+- browse public IP from several computers and check Hostname:Port - it should be diffrent
+- kubectl delete -f phpinfo.yaml
 
 **k8s-2.json:**
 
