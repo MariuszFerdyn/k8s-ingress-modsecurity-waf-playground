@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-info
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: php-info
+  template:
+    metadata:
+      labels:
+        app: php-info
+    spec:
+      containers:
+      - name: php-info
+        image: jasoncallaway/phpinfo
+        resources: {}
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 80
+        - name: https
+          protocol: TCP
+          containerPort: 443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-info
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+  - name: https
+    protocol: TCP
+    port: 443
+  selector:
+    app: php-info
