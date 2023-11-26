@@ -1,0 +1,36 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+   annotations:
+     kubernetes.io/description: Denies all connectivity but essential system workloads and DNS
+   generation: 1
+   labels:
+     app.kubernetes.io/component: network-policy
+     app.kubernetes.io/name: calico-policies
+   name: deny-all
+spec:
+   egress:
+   - action: Allow
+     destination:
+       namespaceSelector: projectcalico.org/name == "kube-system"
+       ports:
+       - 53
+       selector: k8s-app == "kube-dns"
+     protocol: UDP
+   - action: Allow
+     destination:
+       namespaceSelector: projectcalico.org/name == "kube-system"
+       ports:
+       - 53
+       selector: k8s-app == "kube-dns"
+     protocol: TCP
+   - action: Log
+   - action: Deny
+   ingress:
+   - action: Log
+   - action: Deny
+   namespaceSelector: projectcalico.org/name not in {"kube-system","calico-system","tigera-operator","gatekeeper-system"}
+   order: 65535
+   types:
+   - Ingress
+   - Egress
