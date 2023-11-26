@@ -15,6 +15,10 @@ Two scripts that creates Azure Kubernetes Cluster in Resource Group very fast wi
 - browse public IP from several computers and check Hostname:Port - it should be diffrent
 - kubectl delete -f phpinfo.yaml
 
+
+**Deploy Deny All Calico policy***
+kubectl apply -f np_deny_all.yml
+
 **k8s-2.json:**
 
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2Fk8s-2.json)
