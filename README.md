@@ -17,7 +17,7 @@ Two scripts that creates Azure Kubernetes Cluster in Resource Group very fast wi
 
 
 **Deploy Deny All Calico policy***
-kubectl apply -f np_deny_all.yml
+- kubectl apply -f np_deny_all.yml
 
 **k8s-2.json:**
 
