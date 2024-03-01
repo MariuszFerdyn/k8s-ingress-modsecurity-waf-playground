@@ -7,7 +7,7 @@
     "resourceName": "[concat('k8s-', uniquestring(resourceGroup().id))]",
     "dnsPrefix": "[variables('resourceName')]",
     "osDiskSizeGB": 0,
-    "kubernetesVersion": "1.17.11",
+    "kubernetesVersion": "1.27.9",
     "networkPlugin": "kubenet",
     "maxPods": 30,
     "enableRBAC": true,
