@@ -12,7 +12,7 @@
   "variables": {
     "dnsPrefix": "[concat(parameters('resourceName'), uniquestring(resourceGroup().id))]",
     "osDiskSizeGB": 0,
-    "kubernetesVersion": "1.27.9",
+    "kubernetesVersion": "1.32.4",
     "networkPlugin": "kubenet",
     "maxPods": 30,
     "enableRBAC": true,
