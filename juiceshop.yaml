@@ -2,39 +2,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: php-info
+  name: juice-shop
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: php-info
+      app: juice-shop
   template:
     metadata:
       labels:
-        app: php-info
+        app: juice-shop
     spec:
       containers:
-      - name: php-info
-        image: jasoncallaway/phpinfo
-        resources: {}
+      - name: juice-shop
+        image: bkimminich/juice-shop
         ports:
         - name: http
           protocol: TCP
-          containerPort: 80
-        - name: https
-          protocol: TCP
-          containerPort: 443
+          containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: php-info
+  name: juice-shop
 spec:
   type: LoadBalancer
   ports:
   - name: http
     protocol: TCP
-    port: 8080
-    targetPort: 80
+    port: 3000
   selector:
-    app: php-info
+    app: juice-shop

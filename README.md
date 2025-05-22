@@ -19,7 +19,9 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 - browse public IP from several computers and check Hostname:Port - it should be diffrent
 
 ## Deploy JuiceShop 
-- TODO
+- kubectl create -f juiceshop.yaml
+- kubectl get service
+- browse public IP from several computers and check Hostname:Port 
 
 ## Deploy the ingress controler with WAF - the most modern and sophisticated insecure web application
 - TODO (exposed as service)
@@ -36,6 +38,6 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 ## Delete the sample apps
 
 - kubectl delete -f phpinfo.yaml
-- TODO delete the JuiceShop
+- kubectl delete -f juiceshop.yaml
 
 
