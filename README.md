@@ -17,29 +17,31 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 - kubectl create -f phpinfo.yaml
 - kubectl get pods
 - kubectl get service
-- browse public IP from several computers and check Hostname:Port - it should be diffrent
+- browse public IP from several computers and check External-IP:8080 - it should be diffrent
 
 ## Deploy Echo Server
 - kubectl create -f echoserver.yaml
 - kubectl get pods
 - kubectl get service
-- Access the echo server using the public IP and port 8081
-
+- Access the echo server using the External-IP and port 8081
 
 
 ## Deploy JuiceShop 
 - kubectl create -f juiceshop.yaml
 - kubectl get service
-- browse public IP from several computers and check Hostname:Port 
-
+- browse public IP from several computers and check External-IP:3000
 
 
 ## Deploy the ingress controller with ModSecurity (WAF)
-- Ensure you have an NGINX Ingress controller deployed with ModSecurity enabled (see official docs for setup).
-- Edit and apply the provided ingress manifest:
-  - kubectl apply -f app-ingress.yaml
-- This will create an ingress with ModSecurity enabled and rules for JuiceShop, phpinfo, and echoserver.
-- Make sure the backend services `juiceshop`, `php-info`, and `echo-server` exist and are listening on the correct ports.
+- kubectl apply -f app-ingress.yaml
+
+### Access applications via Ingress
+- kubectl get ingress
+- JuiceShop:   `http://<INGRESS-IP>/juiceshop`
+- phpinfo:     `http://<INGRESS-IP>/phpinfo`
+- Echo Server: `http://<INGRESS-IP>/echoserver`
+
+Replace `<INGRESS-IP>` with the actual external IP address of your ingress controller (check with `kubectl get ingress`).
 
 ## Deploy Deny All Calico policy that block everythig
 - kubectl apply -f deny-all.yaml
