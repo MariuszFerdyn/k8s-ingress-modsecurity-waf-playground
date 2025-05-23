@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingress-nginx
+    spec:
+      containers:
+      - name: controller
+        image: registry.k8s.io/ingress-nginx/controller:v1.10.1
+        args:
+          - /nginx-ingress-controller
+          - --enable-modsecurity
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-modsecurity: 'true'
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      SecRuleEngine On
+      SecRequestBodyAccess On
+      SecAuditEngine RelevantOnly
+      SecAuditLogParts ABIJDEFHZ
+      SecAuditLog /var/log/modsec_audit.log
+      SecRule REQUEST_HEADERS:User-Agent 'bad-scanner' 'log,deny,status:403,msg:\'Scanner Detected\''
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /juiceshop
+        pathType: Prefix
+        backend:
+          service:
+            name: juiceshop
+            port:
+              number: 3000
+      - path: /phpinfo
+        pathType: Prefix
+        backend:
+          service:
+            name: php-info
+            port:
+              number: 80
+      - path: /echoserver
+        pathType: Prefix
+        backend:
+          service:
+            name: echo-server
+            port:
+              number: 8080

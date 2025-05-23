@@ -33,7 +33,8 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 
 
 ## Deploy the ingress controller with ModSecurity (WAF)
-- kubectl apply -f app-ingress.yaml
+- kubectl apply -f ingress-all.yaml
+- kubectl get svc -n ingress-nginx
 
 ### Access applications via Ingress
 - kubectl get ingress
@@ -60,3 +61,4 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 - kubectl delete -f phpinfo.yaml
 - kubectl delete -f juiceshop.yaml
 - kubectl delete -f echoserver.yaml
+- kubectl delete -f ingress-all.yaml
