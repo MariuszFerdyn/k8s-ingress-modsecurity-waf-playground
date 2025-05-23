@@ -33,12 +33,13 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 - browse public IP from several computers and check Hostname:Port 
 
 
+
 ## Deploy the ingress controller with ModSecurity (WAF)
 - Ensure you have an NGINX Ingress controller deployed with ModSecurity enabled (see official docs for setup).
 - Edit and apply the provided ingress manifest:
-  - kubectl apply -f meow-ingress.yaml
-- This will create an ingress with ModSecurity enabled and a sample rule blocking User-Agent 'bad-scanner'.
-- Make sure the backend service `meow-svc` exists and is listening on port 80.
+  - kubectl apply -f app-ingress.yaml
+- This will create an ingress with ModSecurity enabled and rules for JuiceShop, phpinfo, and echoserver.
+- Make sure the backend services `juiceshop`, `php-info`, and `echo-server` exist and are listening on the correct ports.
 
 ## Deploy Deny All Calico policy that block everythig
 - kubectl apply -f deny-all.yaml
@@ -48,8 +49,9 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 
 
 
-## Deploy Ingress Controller with ModSecurity for JuiceShop and phpinfo
-- You can adapt the `meow-ingress.yaml` example for other services (e.g., JuiceShop, phpinfo) by changing the service name and path.
+
+## Deploy Ingress Controller with ModSecurity for JuiceShop, phpinfo, and echoserver
+- The `app-ingress.yaml` manifest includes routing for all three services. You can further adapt it for additional services as needed.
 
 ## Delete the sample apps
 
