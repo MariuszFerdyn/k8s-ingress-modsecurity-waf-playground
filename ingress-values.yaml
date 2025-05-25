@@ -1,0 +1,37 @@
+---
+controller:
+  allowSnippetAnnotations: true
+  config:
+    # Enables ModSecurity functionality
+    enable-modsecurity: 'true'
+    # Enables loading the core rule set (optional, can be enabled on specific ingresses only instead)
+    enable-owasp-modsecurity-crs: 'true' 
+    annotations-risk-level: "Critical" #potrzebne by działały modsecurity-snippet
+    # Ponisze gdy chcemy definiować po całości dla wszystkich ingressów
+    modsecurity-snippet: |-
+       SecRuleEngine On
+       SecRequestBodyAccess On
+       SecAuditLog /dev/stdout
+       SecAuditLogFormat JSON
+  ## Ponize gdy chcemy definiować dla konkretnego ingressu , rozne konfiguracje nie trzymane w annotacjach
+  # ingressClassResource:
+  #   name: external-nginx
+  #   config:
+  #   # Enables ModSecurity functionality
+  #     enable-modsecurity: 'true'
+  #     # Enables loading the core rule set (optional, can be enabled on specific ingresses only instead)
+  #     enable-owasp-modsecurity-crs: 'true'
+  #     annotations-risk-level: "Critical"
+  #     modsecurity-snippet: |
+  #       SecRuleEngine On
+  #       SecAuditLog /dev/stdout
+  #       SecAuditLogFormat JSON
+  # Optional: Allow snippet annotations if needed
+
+  service:
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+  # Required for ACME
+  watchIngressWithoutClass: true
+  extraArgs:
+    ingress-class: external-nginx

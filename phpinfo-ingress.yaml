@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: php-info
+  annotations:
+    # Enable ModSecurity and OWASP CRS
+     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+     nginx.ingress.kubernetes.io/enable-owasp-modsecurity-crs: "true"
+    # nginx.ingress.kubernetes.io/modsecurity-snippet: |-
+    #  SecRuleEngine On
+    #  SecRequestBodyAccess On
+    #  SecAuditLog /dev/stdout
+    #  SecAuditLogFormat JSON
+spec:
+  #ingressClassName: external-nginx
+  rules:
+    - host: echo.antonputra.pvt
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: php-info
+                port:
+                  number: 8080
