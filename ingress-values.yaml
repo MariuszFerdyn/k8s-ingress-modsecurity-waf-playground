@@ -2,6 +2,7 @@
 controller:
   allowSnippetAnnotations: true
   config:
+    # More info: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#modsecurity-snippet
     # Enables ModSecurity functionality
     enable-modsecurity: 'true'
     # Enables loading the core rule set (optional, can be enabled on specific ingresses only instead)
@@ -30,7 +31,7 @@ controller:
 
   service:
     annotations:
-      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /
   # Required for ACME
   watchIngressWithoutClass: true
   extraArgs:

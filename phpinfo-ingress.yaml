@@ -4,21 +4,20 @@ metadata:
   name: php-info
   annotations:
     # Enable ModSecurity and OWASP CRS
-     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
-     nginx.ingress.kubernetes.io/enable-owasp-modsecurity-crs: "true"
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-modsecurity-crs: "true"
     # nginx.ingress.kubernetes.io/modsecurity-snippet: |-
     #  SecRuleEngine On
     #  SecRequestBodyAccess On
     #  SecAuditLog /dev/stdout
     #  SecAuditLogFormat JSON
-     nginx.ingress.kubernetes.io/rewrite-target: / 
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   #ingressClassName: external-nginx
   rules:
-    - host: echo.antonputra.pvt
-      http:
+     - http:
         paths:
-          - path: /php-info
+          - path: /
             pathType: Prefix
             backend:
               service:
