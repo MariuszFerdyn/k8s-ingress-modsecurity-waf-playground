@@ -35,14 +35,14 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 ## Deploy the ingress controller with ModSecurity (WAF)
 - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 - helm install ingress ingress-nginx/ingress-nginx -f .\ingress-values.yaml
-- kubectl get ingress
 
-## Expose application via ingress
-- kubectl apply -f phpinfo-ingress.yaml
+
+## Expose applicationx via ingress
+- kubectl apply -f ingress.yaml
 
 ### Access applications via Ingress
 - kubectl get ingress
-- JuiceShop:   `http://<INGRESS-IP>/juiceshop`
+- JuiceShop:   `http://<INGRESS-IP>/`
 - phpinfo:     `http://<INGRESS-IP>/phpinfo`
 - Echo Server: `http://<INGRESS-IP>/echoserver`
 
@@ -55,14 +55,10 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 - TODO
 
 
-
-
-## Deploy Ingress Controller with ModSecurity for JuiceShop, phpinfo, and echoserver
-- The `app-ingress.yaml` manifest includes routing for all three services. You can further adapt it for additional services as needed.
-
 ## Delete the sample apps
 
 - kubectl delete -f phpinfo.yaml
 - kubectl delete -f juiceshop.yaml
 - kubectl delete -f echoserver.yaml
-- kubectl delete -f ingress-all.yaml
+- kubectl delete -f ingress.yaml
+- helm uninstall ingress
