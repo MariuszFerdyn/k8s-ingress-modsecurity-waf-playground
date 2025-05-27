@@ -48,6 +48,11 @@ ARM template that creates Azure Kubernetes Cluster in Resource Group very fast w
 
 Replace `<INGRESS-IP>` with the actual external IP address of your ingress controller (check with `kubectl get ingress`).
 
+# Tests
+## Deploy contaner with python and connect to it interactyvly
+- kubectl run -it --rm python-interactive --image=python:3.11 --restart=Never -- bash
+
+
 ## Deploy Deny All Calico policy that block everythig
 - kubectl apply -f deny-all.yaml
 
@@ -55,7 +60,8 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 - TODO
 
 
-## Delete the sample apps
+
+# Delete
 
 - kubectl delete -f phpinfo.yaml
 - kubectl delete -f juiceshop.yaml
