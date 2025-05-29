@@ -14,6 +14,13 @@
             "metadata": {
                 "description": "Location for all resources"
             }
+        },
+        "deployAppGateway": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Deploy Application Gateway with WAF"
+            }
         }
     },
     "variables": {
@@ -25,6 +32,7 @@
     },
     "resources": [
         {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2023-05-01",
             "name": "[variables('vnetName')]",
@@ -46,6 +54,7 @@
             }
         },
         {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2023-05-01",
             "name": "[variables('publicIpName')]",
@@ -58,6 +67,7 @@
             }
         },
         {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
             "apiVersion": "2023-05-01",
             "name": "[variables('wafPolicyName')]",
@@ -105,7 +115,7 @@
                 "configuration": {
                     "activeRevisionsMode": "Single",
                     "ingress": {
-                        "external": true,
+                        "external": "[if(parameters('deployAppGateway'), bool('true'), bool('true'))]",
                         "targetPort": 3000,
                         "transport": "http",
                         "allowInsecure": true
@@ -130,6 +140,7 @@
             }
         },
         {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/applicationGateways",
             "apiVersion": "2023-05-01",
             "name": "[variables('appGatewayName')]",
@@ -246,12 +257,14 @@
             "value": "[concat('https://', variables('appName'), '.', reference(resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))).defaultDomain)]"
         },
         "applicationGatewayUrl": {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "string",
-            "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))).ipAddress)]"
+            "value": "[if(parameters('deployAppGateway'), concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))).ipAddress), '')]"
         },
         "applicationGatewayPublicIP": {
+            "condition": "[parameters('deployAppGateway')]",
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))).ipAddress]"
+            "value": "[if(parameters('deployAppGateway'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))).ipAddress, '')]"
         }
     }
 }

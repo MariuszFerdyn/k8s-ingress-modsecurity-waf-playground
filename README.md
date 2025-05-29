@@ -51,6 +51,11 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 # Tests
 ## Deploy contaner with python and connect to it interactyvly
 - kubectl run -it --rm python-interactive --image=python:3.11 --restart=Never -- bash
+- git clone https://github.com/MariuszFerdyn/k8scluster.git
+- cd k8scluster
+- python juice_shop_solver.py --url http://...   # Use custom Juice Shop URL
+
+Do it against svc of Ingress and svc of JuiceShop.
 
 
 ## Deploy Deny All Calico policy that block everythig
@@ -68,3 +73,9 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 - kubectl delete -f echoserver.yaml
 - kubectl delete -f ingress.yaml
 - helm uninstall ingress
+
+# Compare with JuiceShop deployed as Container Apps with Application Gateway with WAF
+
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2FJuiceShopContainerAppsWithWAF%2Fjuiceshop-containerapps-w-waf.json)
+
+Do the test against public IP of Application Gateway.
