@@ -57,6 +57,11 @@ Replace `<INGRESS-IP>` with the actual external IP address of your ingress contr
 
 Do it against svc of Ingress and svc of JuiceShop.
 
+# Proxy to External Website via Ingress with ModSecurity
+- kubectl apply -f .\ingress-external.yaml
+
+Browse: `http://<INGRESS-IP>/external-service`
+
 
 ## Deploy Deny All Calico policy that block everythig
 - kubectl apply -f deny-all.yaml
