@@ -1,6 +1,8 @@
-# Azure Kubernetes Cluster - Easy Create
+# Kubernetes Ingress Controller with ModSecurity WAF – Playground, Test & Compare with Azure Application Gateway
 
-ARM template that creates Azure Kubernetes Cluster in Resource Group very fast with minimym parameters.
+Kubernetes deployment example featuring an Ingress Controller integrated with ModSecurity as a Web Application Firewall (WAF) for testing and protecting web applications against common threats like SQL injection and cross-site scripting, using the OWASP Core Rule Set—allowing you to compare the results with Azure Application Gateway with WAF.
+
+# ARM template that creates Azure Kubernetes Cluster in Resource Group very fast with minimym parameters.
 
 
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2Fk8s-2.json)
