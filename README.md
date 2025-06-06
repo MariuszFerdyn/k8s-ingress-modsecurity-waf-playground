@@ -86,3 +86,18 @@ Browse: `http://<INGRESS-IP>/external-service`
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2FJuiceShopContainerAppsWithWAF%2Fjuiceshop-containerapps-w-waf.json)
 
 Do the test against public IP of Application Gateway.
+
+# Tetsing using local kubernetes k3s
+
+## Installation
+On Linux Machine e.g. VM.
+- curl -sfL https://get.k3s.io | sh -
+- cat /etc/rancher/k3s/k3s.yaml
+
+On local Windows Machine:
+- notepad $env:USERPROFILE\.kube\config
+put it to the content of k3s.yaml replacing 127.0.0.1 with FQDN or server IP. Allow communication on 6443 port and all others that will be used (node port).
+- kubectl config set-cluster default --insecure-skip-tls-verify=true
+- kubectl get nodes
+
+## Deploy 
