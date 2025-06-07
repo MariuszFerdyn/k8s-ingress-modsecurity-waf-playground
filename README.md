@@ -43,7 +43,7 @@ Kubernetes deployment example featuring an Ingress Controller integrated with Mo
 - kubectl apply -f ingress.yaml
 
 ### Access applications via Ingress
-- kubectl get ingress
+- kubectl get svc
 - JuiceShop:   `http://<INGRESS-IP>/`
 - phpinfo:     `http://<INGRESS-IP>/phpinfo`
 - Echo Server: `http://<INGRESS-IP>/echoserver`
@@ -100,4 +100,27 @@ put it to the content of k3s.yaml replacing 127.0.0.1 with FQDN or server IP. Al
 - kubectl config set-cluster default --insecure-skip-tls-verify=true
 - kubectl get nodes
 
-## Deploy 
+## Deploy
+
+### Remove default Ingress - Traefik for k3s
+kubectl -n kube-system delete helmcharts traefik
+kubectl -n kube-system delete svc traefik
+
+### Deploy applications
+
+kubectl apply -f phpinfo.yaml
+kubectl apply -f echoserver.yaml
+kubectl apply -f Juiceshop.yaml
+
+### Deploy ingress
+helm install  ingress ingress-nginx/ingress-nginx -f .\ingress-values.yaml
+kubectl apply -f .\ingress.yaml
+
+### Test
+
+kubectl get svc
+- JuiceShop:   `http://<INGRESS-IP>/`
+- phpinfo:     `http://<INGRESS-IP>/phpinfo`
+- Echo Server: `http://<INGRESS-IP>/echoserver`
+
+You can also browse skipping ingress e.g.: http://<INGRESS-IP>:3000/ or http://<INGRESS-IP>:8081/ or http://<INGRESS-IP>:8080/
