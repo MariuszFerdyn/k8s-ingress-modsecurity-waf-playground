@@ -124,3 +124,11 @@ kubectl get svc
 - Echo Server: `http://<INGRESS-IP>/echoserver`
 
 You can also browse skipping ingress e.g.: http://<INGRESS-IP>:3000/ or http://<INGRESS-IP>:8081/ or http://<INGRESS-IP>:8080/
+
+### Install Calico
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.1/manifests/operator-crds.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.1/manifests/tigera-operator.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.1/manifests/custom-resources.yaml
+
+### Configure Calico to allow connections only via ingress controller
+kubectl apply -f .\calico-allow-via-ingress.yaml

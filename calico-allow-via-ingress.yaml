@@ -10,6 +10,7 @@ metadata:
    name: deny-all
 spec:
    egress:
+   # Allow DNS (UDP)
    - action: Allow
      destination:
        namespaceSelector: projectcalico.org/name == "kube-system"
@@ -17,6 +18,7 @@ spec:
        - 53
        selector: k8s-app == "kube-dns"
      protocol: UDP
+   # Allow DNS (TCP)
    - action: Allow
      destination:
        namespaceSelector: projectcalico.org/name == "kube-system"
@@ -24,9 +26,32 @@ spec:
        - 53
        selector: k8s-app == "kube-dns"
      protocol: TCP
+   # Allow all egress to system namespaces
+   - action: Allow
+     destination:
+       namespaceSelector: projectcalico.org/name in {"kube-system","calico-system","tigera-operator","gatekeeper-system"}
+   # Log and deny all other egress
    - action: Log
    - action: Deny
    ingress:
+   # Allow all ingress from system namespaces
+   - action: Allow
+     source:
+       namespaceSelector: projectcalico.org/name in {"kube-system","calico-system","tigera-operator","gatekeeper-system"}
+   # Allow all ports from ingress controller pods (adjust namespace/label as needed)
+   - action: Allow
+     source:
+       namespaceSelector: projectcalico.org/name == "ingress-nginx"
+       selector: app.kubernetes.io/name == "ingress-nginx"
+   # Allow only port 80 from the internet (all external IPs)
+   - action: Allow
+     source:
+       nets:
+         - 0.0.0.0/0
+     destination:
+       ports:
+         - 80
+   # Log and deny all other ingress
    - action: Log
    - action: Deny
    namespaceSelector: projectcalico.org/name not in {"kube-system","calico-system","tigera-operator","gatekeeper-system"}
