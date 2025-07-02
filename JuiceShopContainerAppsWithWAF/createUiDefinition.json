@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "environmentName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Container Apps Environment Name",
+                "defaultValue": "",
+                "toolTip": "Name of the Container Apps Environment",
+                "constraints": {
+                    "required": true,
+                    "regex": "^[a-z0-9A-Z-]{3,24}$",
+                    "validationMessage": "Environment name must be between 3 and 24 characters long and can contain alphanumeric characters and hyphens."
+                }
+            },
+            {
+                "name": "deployAppGateway",
+                "type": "Microsoft.Common.CheckBox",
+                "label": "Deploy Application Gateway with WAF",
+                "defaultValue": false,
+                "toolTip": "Enable this option to deploy an Application Gateway with Web Application Firewall."
+            }
+        ]
+    },
+    "outputs": {
+        "environmentName": "[basics('environmentName')]",
+        "deployAppGateway": "[basics('deployAppGateway')]"
+    }
+}

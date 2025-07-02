@@ -1,0 +1,70 @@
+name: Create Managed App
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: 'Navigate to Workspace'
+      run: cd $GITHUB_WORKSPACE
+
+    - name: 'Zip ARM directory'
+      shell: pwsh
+      run: |
+        Compress-Archive -Path 'ARM\*' -DestinationPath app.zip -Update
+        dir
+
+    - name: 'Build Container Apps'
+      shell: pwsh
+      run: |
+        # env
+        $subscriptionId="${{ secrets.SUBSCRIPTIONID }}"
+        $ResourceGroup="${{ vars.ResourceGroup }}"+"-managedappdefinition"
+        $location="${{ vars.Location }}"
+        $Environment="juice-shop"
+        $EntraGroup="${{ vars.EntraGroup }}"
+        
+        # Validate password
+        $password="${{ secrets.SECRET }}"
+        if ($password.Length -lt 8 -or $password -notmatch '[A-Za-z]' -or $password -notmatch '\d' -or $password -notmatch '[\W_]') {
+            throw "Password does not meet complexity requirements. It must be at least 8 characters long and include one letter, one number, and one special character."
+        }
+
+        # Login to Azure
+        az login --service-principal -u ${{ secrets.APPLICATIONID }} -p $password --tenant ${{ secrets.TENANTID }}
+        
+        # Set the subscription context
+        az account set --subscription $subscriptionId
+        
+        # Create a new resource group for the gallery if it doesn't exist
+        az group create --name $ResourceGroup --location $location
+        
+        # Create storage account name with date and time with seconds with container and upload the zip file
+        $StorageAccountName = "wordpress" + (Get-Date).ToString("yyyyMMddHHmmss")
+        az storage account create --name "$StorageAccountName" --resource-group $ResourceGroup --location $location --sku Standard_LRS --kind StorageV2 --allow-blob-public-access true
+
+        az storage container create --account-name "$StorageAccountName" --name "appcontainer" --public-access blob
+
+        # Upload the app.zip file to the storage account
+        az storage blob upload --account-name "$StorageAccountName" --container-name "appcontainer" --name "app.zip" --file app.zip
+
+        # Get the storage group id and id of role for the group that will be the owner of the deployed managed app. Please create this group in the EntraID first.
+        $groupid=$(az ad group show --group "$EntraGroup" --query id --output tsv)
+        $ownerid=$(az role definition list --name Owner --query [].name --output tsv)
+
+        # Get the uploaded app.zip file URL
+        $blob=$(az storage blob url --account-name "$StorageAccountName" --container-name "appcontainer" --name app.zip --output tsv)
+        
+        Write-Host "-----------"
+        Write-Host $groupid
+        Write-Host $ownerid
+        Write-Host $blob
+        Write-Host "-----------"
+        # Create the managed app definition
+        $authorisations=($groupid)+":"+($ownerid)
+        az managedapp definition create --name "JuiceShopApps" --location $location --resource-group "$ResourceGroup" --lock-level ReadOnly --display-name "Juice Shop Implementation" --description "Juice Shop Container Apps optionally with Application Gateway - WAF"  --authorizations $authorisations --package-file-uri "$blob"

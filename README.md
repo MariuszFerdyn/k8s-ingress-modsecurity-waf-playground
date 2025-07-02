@@ -83,7 +83,7 @@ Browse: `http://<INGRESS-IP>/external-service`
 
 # Compare with JuiceShop deployed as Container Apps with Application Gateway with WAF
 
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2FJuiceShopContainerAppsWithWAF%2Fjuiceshop-containerapps-w-waf.json)
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMariuszFerdyn%2Fk8scluster%2Fmaster%2FJuiceShopContainerAppsWithWAF%2FmainTemplate.json)
 
 Do the test against public IP of Application Gateway.
 
