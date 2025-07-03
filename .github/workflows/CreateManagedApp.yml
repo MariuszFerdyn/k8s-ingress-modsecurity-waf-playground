@@ -16,7 +16,7 @@ jobs:
     - name: 'Zip ARM directory'
       shell: pwsh
       run: |
-        Compress-Archive -Path 'ARM\*' -DestinationPath app.zip -Update
+        Compress-Archive -Path 'JuiceShopContainerAppsWithWAF\*' -DestinationPath app.zip -Update
         dir
 
     - name: 'Build Container Apps'
@@ -45,7 +45,7 @@ jobs:
         az group create --name $ResourceGroup --location $location
         
         # Create storage account name with date and time with seconds with container and upload the zip file
-        $StorageAccountName = "wordpress" + (Get-Date).ToString("yyyyMMddHHmmss")
+        $StorageAccountName = "juiceshop" + (Get-Date).ToString("yyyyMMddHHmmss")
         az storage account create --name "$StorageAccountName" --resource-group $ResourceGroup --location $location --sku Standard_LRS --kind StorageV2 --allow-blob-public-access true
 
         az storage container create --account-name "$StorageAccountName" --name "appcontainer" --public-access blob
