@@ -7,26 +7,48 @@
             {
                 "name": "environmentName",
                 "type": "Microsoft.Common.TextBox",
-                "label": "Container Apps Environment Name",
-                "defaultValue": "",
-                "toolTip": "Name of the Container Apps Environment",
+                "label": "Environment Name",
+                "placeholder": "Enter environment name",
+                "toolTip": "Name of the Container Apps Environment. This will be used as a prefix for all resources.",
                 "constraints": {
                     "required": true,
-                    "regex": "^[a-z0-9A-Z-]{3,24}$",
-                    "validationMessage": "Environment name must be between 3 and 24 characters long and can contain alphanumeric characters and hyphens."
-                }
-            },
-            {
-                "name": "deployAppGateway",
-                "type": "Microsoft.Common.CheckBox",
-                "label": "Deploy Application Gateway with WAF",
-                "defaultValue": false,
-                "toolTip": "Enable this option to deploy an Application Gateway with Web Application Firewall."
+                    "regex": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,58}[a-zA-Z0-9]$",
+                    "validationMessage": "Environment name must be 3-60 characters long, contain only alphanumeric characters and hyphens, and cannot start or end with a hyphen."
+                },
+                "visible": true
             }
-        ]
-    },
-    "outputs": {
-        "environmentName": "[basics('environmentName')]",
-        "deployAppGateway": "[basics('deployAppGateway')]"
+        ],
+        "steps": [
+            {
+                "name": "applicationGatewayConfig",
+                "label": "Application Gateway Configuration",
+                "elements": [
+                    {
+                        "name": "deployAppGateway",
+                        "type": "Microsoft.Common.CheckBox",
+                        "label": "Deploy Application Gateway with WAF",
+                        "toolTip": "Check this box to deploy an Application Gateway with Web Application Firewall (WAF) for additional security and load balancing capabilities.",
+                        "constraints": {
+                            "required": false
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "appGatewayInfo",
+                        "type": "Microsoft.Common.InfoBox",
+                        "visible": "[steps('applicationGatewayConfig').deployAppGateway]",
+                        "options": {
+                            "icon": "Info",
+                            "text": "Application Gateway with WAF will be deployed with the following configuration:\n• WAF Policy with OWASP 3.2 rules\n• Prevention mode enabled\n• Virtual Network with dedicated subnet\n• Public IP address for frontend\n• HTTPS backend to Container App"
+                        }
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "environmentName": "[basics('environmentName')]",
+            "location": "[location()]",
+            "deployAppGateway": "[steps('applicationGatewayConfig').deployAppGateway]"
+        }
     }
 }
