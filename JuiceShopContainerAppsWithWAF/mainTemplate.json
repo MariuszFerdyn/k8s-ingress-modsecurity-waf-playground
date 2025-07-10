@@ -32,6 +32,55 @@
     },
     "resources": [
         {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2023-05-01",
+            "name": "[parameters('environmentName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Consumption"
+            },
+            "properties": {
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.App/containerApps",
+            "apiVersion": "2023-05-01",
+            "name": "[variables('appName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))]"
+            ],
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))]",
+                "configuration": {
+                    "activeRevisionsMode": "Single",
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 3000,
+                        "transport": "http",
+                        "allowInsecure": true
+                    }
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "name": "juice-shop",
+                            "image": "bkimminich/juice-shop",
+                            "resources": {
+                                "cpu": "0.5",
+                                "memory": "1Gi"
+                            }
+                        }
+                    ],
+                    "scale": {
+                        "minReplicas": 0,
+                        "maxReplicas": 10
+                    }
+                }
+            }
+        },
+        {
             "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2023-05-01",
@@ -91,55 +140,6 @@
             }
         },
         {
-            "type": "Microsoft.App/managedEnvironments",
-            "apiVersion": "2023-05-01",
-            "name": "[parameters('environmentName')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Consumption"
-            },
-            "properties": {
-                "zoneRedundant": false
-            }
-        },
-        {
-            "type": "Microsoft.App/containerApps",
-            "apiVersion": "2023-05-01",
-            "name": "[variables('appName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))]"
-            ],
-            "properties": {
-                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))]",
-                "configuration": {
-                    "activeRevisionsMode": "Single",
-                    "ingress": {
-                        "external": "[if(parameters('deployAppGateway'), bool('true'), bool('true'))]",
-                        "targetPort": 3000,
-                        "transport": "http",
-                        "allowInsecure": true
-                    }
-                },
-                "template": {
-                    "containers": [
-                        {
-                            "name": "juice-shop",
-                            "image": "bkimminich/juice-shop",
-                            "resources": {
-                                "cpu": "0.5",
-                                "memory": "1Gi"
-                            }
-                        }
-                    ],
-                    "scale": {
-                        "minReplicas": 0,
-                        "maxReplicas": 10
-                    }
-                }
-            }
-        },
-        {
             "condition": "[parameters('deployAppGateway')]",
             "type": "Microsoft.Network/applicationGateways",
             "apiVersion": "2023-05-01",
@@ -191,7 +191,7 @@
                         "properties": {
                             "backendAddresses": [
                                 {
-                                    "fqdn": "[concat(variables('appName'), '.', reference(resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))).defaultDomain)]"
+                                    "fqdn": "[reference(resourceId('Microsoft.App/containerApps', variables('appName'))).configuration.ingress.fqdn]"
                                 }
                             ]
                         }
@@ -204,9 +204,11 @@
                             "port": 443,
                             "protocol": "Https",
                             "cookieBasedAffinity": "Disabled",
-                            "pickHostNameFromBackendAddress": false,
+                            "pickHostNameFromBackendAddress": true,
                             "requestTimeout": 20,
-                            "hostName": "[concat(variables('appName'), '.', reference(resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))).defaultDomain)]"
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('appGatewayName'), 'containerAppProbe')]"
+                            }
                         }
                     }
                 ],
@@ -245,6 +247,26 @@
                         }
                     }
                 ],
+                "probes": [
+                    {
+                        "name": "containerAppProbe",
+                        "properties": {
+                            "protocol": "Https",
+                            "host": "[reference(resourceId('Microsoft.App/containerApps', variables('appName'))).configuration.ingress.fqdn]",
+                            "path": "/",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": false,
+                            "minServers": 0,
+                            "match": {
+                                "statusCodes": [
+                                    "200-399"
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "firewallPolicy": {
                     "id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', variables('wafPolicyName'))]"
                 }
@@ -254,7 +276,7 @@
     "outputs": {
         "applicationUrl": {
             "type": "string",
-            "value": "[concat('https://', variables('appName'), '.', reference(resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))).defaultDomain)]"
+            "value": "[reference(resourceId('Microsoft.App/containerApps', variables('appName'))).configuration.ingress.fqdn]"
         },
         "applicationGatewayUrl": {
             "condition": "[parameters('deployAppGateway')]",
